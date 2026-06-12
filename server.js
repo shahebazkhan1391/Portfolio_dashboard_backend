@@ -7,8 +7,12 @@ const nodemailer = require('nodemailer'); // 1. Import Nodemailer
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
-app.use(cors({ origin: '*' }));
+// This explicitly allows your frontend to securely communicate with the backend
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type']
+}));
 
 // 2. Configure the email transporter engine
 const transporter = nodemailer.createTransport({
