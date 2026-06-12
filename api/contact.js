@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
   secure: false, // TLS configuration required by Vercel cloud architecture
   requireTLS: true,
   auth: {
-    user: 'your_actual_email@gmail.com', // Replace with your real Gmail address
+    user: 'shahebazkhannawabkhan@gmail.com', // Replace with your real Gmail address
     pass: process.env.GMAIL_PASS         // Will be safely read from Vercel's Dashboard
   }
 });
