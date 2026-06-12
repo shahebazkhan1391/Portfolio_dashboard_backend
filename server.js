@@ -7,20 +7,27 @@ const nodemailer = require('nodemailer');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// === 1. MIDDLEWARE CONFIGURATION (MUST BE FIRST) ===
-app.use(cors({ origin: '*' })); // Allows any frontend to access this backend
-app.use(express.json());        // CRUCIAL: Tells Express how to read incoming JSON form data!
+// === 1. MIDDLEWARE CONFIGURATION ===
+app.use(cors({ origin: '*' })); 
+app.use(express.json());        
 
 // === 2. EMAIL ENGINE SETUP ===
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: 'shahebazkhannawabkhan@gmail.com', // Replace with your real Gmail address
-    pass: process.env.GMAIL_PASS         // Reads safely from Render environment variables
+    pass: process.env.GMAIL_PASS         
   }
 });
 
 // === 3. ROUTE HANDLERS ===
+
+// Base route - completely safe string matching (no regex crash)
+app.get('/', (req, res) => {
+  res.send("🚀 Portfolio Backend Server is running smoothly!");
+});
+
+// The main contact form API route
 app.post('/api/contact', (req, res) => {
   const { name, email, message } = req.body;
 
@@ -67,11 +74,6 @@ app.post('/api/contact', (req, res) => {
     console.log('📧 Email sent successfully: ' + info.response);
     return res.status(200).json({ success: true, message: "Message received and emailed!" });
   });
-});
-
-// Wildcard route using the new required Express syntax to avoid path-to-regexp crash
-app.get('/:path*', (req, res) => {
-  res.send("🚀 Portfolio Backend Server is running smoothly!");
 });
 
 // === 4. START ENGINE ===
