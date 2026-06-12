@@ -13,7 +13,9 @@ app.use(express.json());
 
 // === 2. EMAIL ENGINE SETUP ===
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true, // Upgrades the connection to SSL/TLS securely over IPv4
   auth: {
     user: 'shahebazkhannawabkhan@gmail.com', // Replace with your real Gmail address
     pass: process.env.GMAIL_PASS         
