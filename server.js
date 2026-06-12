@@ -15,7 +15,7 @@ app.use(express.json());        // CRUCIAL: Tells Express how to read incoming J
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'your_actual_email@gmail.com', // Replace with your real Gmail address
+    user: 'shahebazkhannawabkhan@gmail.com', // Replace with your real Gmail address
     pass: process.env.GMAIL_PASS         // Reads safely from Render environment variables
   }
 });
@@ -45,8 +45,8 @@ app.post('/api/contact', (req, res) => {
 
   // Construct Email Payload
   const mailOptions = {
-    from: 'your_actual_email@gmail.com', // Replace with your real Gmail address
-    to: 'your_actual_email@gmail.com',   // Replace with your real Gmail address
+    from: 'shahebazkhannawabkhan@gmail.com', // Replace with your real Gmail address
+    to: 'shahebazkhannawabkhan@gmail.com',   // Replace with your real Gmail address
     subject: `💼 New Portfolio Message from ${name}`,
     html: `
       <h3>You have a new contact form submission!</h3>
