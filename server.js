@@ -2,48 +2,51 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
-const nodemailer = require('nodemailer'); // 1. Import Nodemailer
+const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// This explicitly allows your frontend to securely communicate with the backend
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type']
-}));
+// === 1. MIDDLEWARE CONFIGURATION (MUST BE FIRST) ===
+app.use(cors({ origin: '*' })); // Allows any frontend to access this backend
+app.use(express.json());        // CRUCIAL: Tells Express how to read incoming JSON form data!
 
-// 2. Configure the email transporter engine
+// === 2. EMAIL ENGINE SETUP ===
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'shahebazkhannawabkhan@gmail.com',         // Your actual Gmail address
-    pass: 'ivwa zgci rakf ncix'           // The 16-character App Password you generated
+    user: 'your_actual_email@gmail.com', // Replace with your real Gmail address
+    pass: process.env.GMAIL_PASS         // Reads safely from Render environment variables
   }
 });
 
+// === 3. ROUTE HANDLERS ===
 app.post('/api/contact', (req, res) => {
+  // Now req.body won't be undefined anymore!
   const { name, email, message } = req.body;
 
   if (!name || !email || !message) {
     return res.status(400).json({ success: false, error: "All fields are required!" });
   }
 
-  // Keep your local JSON file backup functioning
+  // Backup data to local JSON file
   const newMessage = { name, email, message, timestamp: new Date().toISOString() };
   const filePath = path.join(__dirname, 'messages.json');
   let messages = [];
   if (fs.existsSync(filePath)) {
-    messages = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    try {
+      messages = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    } catch (e) {
+      messages = [];
+    }
   }
   messages.push(newMessage);
   fs.writeFileSync(filePath, JSON.stringify(messages, null, 2));
 
-  // 3. Set up the email blueprint layout
+  // Construct Email Payload
   const mailOptions = {
-    from: 'shahebazkhannawabkhan@gmail.com', 
-    to: 'shahebazkhannawabkhan@gmail.com',           // Where you want to receive the alerts (can be the same email)
+    from: 'your_actual_email@gmail.com', // Replace with your real Gmail address
+    to: 'your_actual_email@gmail.com',   // Replace with your real Gmail address
     subject: `💼 New Portfolio Message from ${name}`,
     html: `
       <h3>You have a new contact form submission!</h3>
@@ -56,25 +59,23 @@ app.post('/api/contact', (req, res) => {
     `
   };
 
-  // 4. Fire the email off over the internet
+  // Dispatch Email
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      console.error("❌ Nodemailer failed to send email:", error);
-      // We still return success: true because the data saved to messages.json safely
-      return res.status(200).json({ 
-        success: true, 
-        message: "Saved to database, but email dispatch failed." 
-      });
-    } else {
-      console.log('📧 Email alert dispatched successfully: ' + info.response);
-      return res.status(200).json({ 
-        success: true, 
-        message: "Data successfully saved and emailed!" 
-      });
+      console.error("❌ Nodemailer failed:", error);
+      return res.status(200).json({ success: true, message: "Saved locally, email failed." });
     }
+    console.log('📧 Email sent successfully: ' + info.response);
+    return res.status(200).json({ success: true, message: "Message received and emailed!" });
   });
 });
 
+// Wildcard route to prevent "Cannot GET /" page timeouts
+app.get('*', (req, res) => {
+  res.send("🚀 Portfolio Backend Server is running smoothly!");
+});
+
+// === 4. START ENGINE ===
 app.listen(PORT, () => {
-  console.log(`🚀 Your full-stack backend is listening on http://localhost:${PORT}`);
+  console.log(`🚀 Server listening smoothly on port ${PORT}`);
 });
