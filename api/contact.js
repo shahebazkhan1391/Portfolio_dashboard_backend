@@ -1,59 +1,87 @@
-const express = require('express');
-const cors = require('cors');
 const nodemailer = require('nodemailer');
+const mongoose = require('mongoose');
+const Message = require('../models/Message'); // Import our database layout
 
-const app = express();
+// === 1. MONGODB DATABASE CONNECTION ===
+const connectDB = async () => {
+  // If already connected, use the existing database connection cache
+  if (mongoose.connection.readyState >= 1) return;
 
-// === 1. MIDDLEWARE CONFIGURATION ===
-app.use(cors({ origin: '*' })); 
-app.use(express.json());        
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log("📥 MongoDB Connected Successfully");
+  } catch (error) {
+    console.error("❌ MongoDB Connection Failed:", error);
+    throw error;
+  }
+};
 
 // === 2. EMAIL ENGINE SETUP ===
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
   port: 587,
-  secure: false, // TLS configuration required by Vercel cloud architecture
+  secure: false, 
   requireTLS: true,
   auth: {
     user: 'shahebazkhannawabkhan@gmail.com', // Replace with your real Gmail address
-    pass: process.env.GMAIL_PASS         // Will be safely read from Vercel's Dashboard
+    pass: process.env.GMAIL_PASS         
   }
 });
 
-// === 3. ROUTE HANDLER FOR VERCEL ===
-app.post('/api/contact', (req, res) => {
-  const { name, email, message } = req.body;
+// === 3. SERVERLESS CONTROLLER ===
+module.exports = async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (!name || !email || !message) {
-    return res.status(400).json({ success: false, error: "All fields are required!" });
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
   }
 
-  // Construct Email Payload
-  const mailOptions = {
-    from: 'shahebazkhannawabkhan@gmail.com', // Replace with your real Gmail address
-    to: 'shahebazkhannawabkhan@gmail.com',   // Replace with your real Gmail address
-    subject: `💼 New Portfolio Message from ${name}`,
-    html: `
-      <h3>You have a new contact form submission!</h3>
-      <p><strong>Name:</strong> ${name}</p>
-      <p><strong>Email:</strong> ${email}</p>
-      <p><strong>Message:</strong></p>
-      <div style="padding: 10px; background: #f4f4f4; border-left: 4px solid #646cff;">
-        ${message}
-      </div>
-    `
-  };
+  if (req.method === 'GET') {
+    return res.status(200).json({ status: "🚀 Backend with Database is live!" });
+  }
 
-  // Dispatch Email
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.error("❌ Nodemailer failed:", error);
-      return res.status(500).json({ success: false, error: "Email delivery failed." });
+  if (req.method === 'POST') {
+    const { name, email, message } = req.body;
+
+    if (!name || !email || !message) {
+      return res.status(400).json({ success: false, error: "All fields are required!" });
     }
-    console.log('📧 Email sent successfully: ' + info.response);
-    return res.status(200).json({ success: true, message: "Message received and emailed!" });
-  });
-});
 
-// Export the express engine for Vercel's Serverless environment handler
-module.exports = app;
+    try {
+      // Connect to the database cluster
+      await connectDB();
+
+      // Save the message permanently to MongoDB Atlas
+      const newMessage = new Message({ name, email, message });
+      await newMessage.save();
+      console.log("💾 Message saved to database cluster!");
+
+      // Construct and dispatch Email Payload
+      const mailOptions = {
+        from: 'shahebazkhannawabkhan@gmail.com', // Replace with your real Gmail address
+        to: 'shahebazkhannawabkhan@gmail.com',   // Replace with your real Gmail address
+        subject: `💼 New Portfolio Message from ${name}`,
+        html: `
+          <h3>You have a new contact form submission!</h3>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Message:</strong></p>
+          <div style="padding: 10px; background: #f4f4f4; border-left: 4px solid #646cff;">
+            ${message}
+          </div>
+        `
+      };
+
+      await transporter.sendMail(mailOptions);
+      return res.status(200).json({ success: true, message: "Message securely saved and emailed!" });
+
+    } catch (error) {
+      console.error("❌ Process failure:", error);
+      return res.status(500).json({ success: false, error: "Failed to process form submission." });
+    }
+  }
+
+  return res.status(405).json({ success: false, error: "Method Not Allowed" });
+};
