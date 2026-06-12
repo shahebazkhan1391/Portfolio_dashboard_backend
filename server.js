@@ -22,7 +22,6 @@ const transporter = nodemailer.createTransport({
 
 // === 3. ROUTE HANDLERS ===
 app.post('/api/contact', (req, res) => {
-  // Now req.body won't be undefined anymore!
   const { name, email, message } = req.body;
 
   if (!name || !email || !message) {
@@ -70,8 +69,8 @@ app.post('/api/contact', (req, res) => {
   });
 });
 
-// Wildcard route to prevent "Cannot GET /" page timeouts
-app.get('*', (req, res) => {
+// Wildcard route using the new required Express syntax to avoid path-to-regexp crash
+app.get('/:path*', (req, res) => {
   res.send("🚀 Portfolio Backend Server is running smoothly!");
 });
 
