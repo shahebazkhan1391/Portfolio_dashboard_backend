@@ -14,10 +14,11 @@ app.use(express.json());
 // === 2. EMAIL ENGINE SETUP ===
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 465,
-  secure: true, // Upgrades the connection to SSL/TLS securely over IPv4
+  port: 587,
+  secure: false, // Must be false for port 587
+  requireTLS: true, // Forces encryption over the alternative port route
   auth: {
-    user: 'shahebazkhannawabkhan@gmail.com', // Replace with your real Gmail address
+    user: 'your_actual_email@gmail.com', // Your real Gmail address
     pass: process.env.GMAIL_PASS         
   }
 });
