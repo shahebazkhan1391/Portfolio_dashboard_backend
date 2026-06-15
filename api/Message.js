@@ -22,5 +22,5 @@ const MessageSchema = new mongoose.Schema({
   }
 });
 
-// Export the model. The conditional check prevents Mongoose from re-compiling the model on hot-reloads.
+// This absolute assignment format is much safer for Vercel's hot-reloads
 module.exports = mongoose.models.Message || mongoose.model('Message', MessageSchema);

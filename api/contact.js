@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
-const Message = require('../models/Message'); // Import our database layout
+const Message = require('./Message'); // Import our database layout
 
 // === 1. MONGODB DATABASE CONNECTION ===
 const connectDB = async () => {
