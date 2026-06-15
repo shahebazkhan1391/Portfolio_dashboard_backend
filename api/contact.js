@@ -7,17 +7,16 @@ const connectDB = async () => {
   if (mongoose.connection.readyState >= 1) return;
 
   // PASTE YOUR ACTUAL STRING HERE DIRECTLY FOR A FORCED TEST
-  const directURI = "mongodb+srv://shahebaz_admin:sknk@123@cluster0.datfwwn.mongodb.net/?appName=Cluster0";
+  const directURI = "mongodb+srv://shahebaz_admin:sknk1234@cluster0.datfwwn.mongodb.net/?appName=Cluster0";
 
   try {
+    // Delete the process.env line completely so it doesn't crash your server
     await mongoose.connect(directURI);
     console.log("📥 MongoDB Connected Successfully");
   } catch (error) {
     console.error("❌ MongoDB Connection Failed:", error);
     throw error;
   }
-};
-
 // === 2. EMAIL ENGINE SETUP ===
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
