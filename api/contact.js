@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
-const Message = require('./Message'); // Import our database layout
+const Message = require('../models/Message'); // Import our database layout
 
 // === 1. MONGODB DATABASE CONNECTION ===
 const connectDB = async () => {
@@ -17,6 +17,8 @@ const connectDB = async () => {
     console.error("❌ MongoDB Connection Failed:", error);
     throw error;
   }
+}; // <--- THIS WAS THE MISSING CLOSING BRACKET FIX!
+
 // === 2. EMAIL ENGINE SETUP ===
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
@@ -86,3 +88,4 @@ module.exports = async (req, res) => {
 
   return res.status(405).json({ success: false, error: "Method Not Allowed" });
 };
+
