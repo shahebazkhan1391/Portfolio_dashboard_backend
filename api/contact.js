@@ -4,11 +4,13 @@ const Message = require('./Message'); // Import our database layout
 
 // === 1. MONGODB DATABASE CONNECTION ===
 const connectDB = async () => {
-  // If already connected, use the existing database connection cache
   if (mongoose.connection.readyState >= 1) return;
 
+  // PASTE YOUR ACTUAL STRING HERE DIRECTLY FOR A FORCED TEST
+  const directURI = "mongodb+srv://shahebaz_admin:sknk@123@cluster0.datfwwn.mongodb.net/?appName=Cluster0";
+
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
+    await mongoose.connect(directURI);
     console.log("📥 MongoDB Connected Successfully");
   } catch (error) {
     console.error("❌ MongoDB Connection Failed:", error);
